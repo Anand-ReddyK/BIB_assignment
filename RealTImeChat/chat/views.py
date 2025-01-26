@@ -41,4 +41,7 @@ def home_view(request):
 def chat_room(request, room_name):
     room = get_object_or_404(ChatRoom, name=room_name)
     messages = room.conversation.all()
-    return render(request, 'pages/chat_room.html', {'messages': messages})
+    return render(request, 'pages/chat_room.html', {
+        'messages': messages,
+        "room": room
+        })

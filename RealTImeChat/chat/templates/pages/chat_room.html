@@ -34,14 +34,53 @@
 
 
 <script>
-  // Wait for the DOM to load
   document.addEventListener('DOMContentLoaded', function () {
-      // Scroll to the bottom of the message container
       const messageContainer = document.getElementById('messageContainer');
       messageContainer.scrollTop = messageContainer.scrollHeight;
       
       window.scrollTo(0, document.body.scrollHeight);
     });
+
+    //const roomName = "test";
+    const roomName = "{{ room.name }}";
+    const user = "{{ user }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messages = document.getElementById('messageContainer');
+
+        var direction = "flex-row"
+        if(data.created_by === user){
+            direction = "flex-row-reverse"
+        }
+        messages.innerHTML += `
+            <div class="flex ${direction} py-2">
+                <div class="p-2 bg-gray-100 rounded-lg">
+                    <p class="text-lg">${data.message}</p>
+                    <p class="text-sm text-gray-600">${ data.created_by } | ${ data.created_at }</p>
+                </div>
+            </div>
+        `
+
+        messages.scrollTop = messages.scrollHeight;
+    };
+
+    document.getElementById('send-button').onclick = function(e) {
+        e.preventDefault();
+        const input = document.getElementById('message-box');
+        chatSocket.send(JSON.stringify({ 
+          'message': input.value,
+          'created_by': user
+        }));
+        input.value = '';
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
 
 </script>
 {% endblock %}
