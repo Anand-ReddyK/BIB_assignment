@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .forms import CustomUserCreationForm
+from .models import ChatRoom
 
 def signup(request):
     if request.method == 'POST':
@@ -34,4 +35,10 @@ def user_login(request):
 
 
 def home_view(request):
-    return render(request, 'pages/home.html')
+    rooms = ChatRoom.objects.all()
+    return render(request, 'pages/home.html', {'rooms': rooms})
+
+def chat_room(request, room_name):
+    room = get_object_or_404(ChatRoom, name=room_name)
+    messages = room.conversation.all()
+    return render(request, 'pages/chat_room.html', {'messages': messages})
