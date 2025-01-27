@@ -87,6 +87,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         created_by = event['created_by']
         created_at = event['created_at']
         await self.send(text_data=json.dumps({
+            'type': 'chat_message',
             'message': message,
             'created_by': created_by,
             'created_at': created_at,
