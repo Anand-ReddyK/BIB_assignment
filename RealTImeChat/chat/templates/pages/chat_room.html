@@ -5,32 +5,45 @@
 {% block content %}
 
  
+<div class="flex h-screen bg-gradient-to-r from-amber-300 via-amber-200 to-amber-300"
+     style="height: calc(100vh - 62px);">
 
- <div class="bg-gradient-to-r from-amber-300 via-amber-200 to-amber-300 flex flex-col justify-center items-center h-screen"
- style="height: calc(100vh - 62px);">
-    <div class="max-w-7xl w-full mx-auto bg-white p-6 rounded-lg shadow-lg font-sans text-gray-800 overflow-y-auto max-h-screen" id="messageContainer">
-      {% for message in messages %}
-        <div class="flex {% if user == message.created_by %} flex-row-reverse {% else %} flex-row {% endif %} py-2">
-          <div class="p-2 bg-gray-100 rounded-lg">
-              <p class="text-lg">{{message.content}}</p>
-              <p class="text-sm text-gray-600">{{ message.created_by }} | {{ message.created_at }}</p>
-          </div>
+    <!-- Chat Section -->
+    <div class="flex flex-col flex-grow items-center h-full">
+        <!-- Message Container -->
+        <div class="max-w-7xl w-full mx-auto bg-white p-6 rounded-lg shadow-lg font-sans text-gray-800 overflow-y-auto max-h-full" id="messageContainer">
+            {% for message in messages %}
+            <div class="flex {% if user == message.created_by %} flex-row-reverse {% else %} flex-row {% endif %} py-2">
+                <div class="p-2 bg-gray-100 rounded-lg">
+                    <p class="text-lg">{{ message.content }}</p>
+                    <p class="text-sm text-gray-600">{{ message.created_by }} | {{ message.created_at }}</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-      {% endfor %}
+
+        <!-- Message Input -->
+        <div class="max-w-7xl w-full mx-auto mt-4 bg-white p-4 rounded-lg shadow-lg font-sans text-gray-800">
+            <form action="." method="post" id="message-form" class="flex items-center">
+                {% csrf_token %}
+                <input type="text" name="message" id="message-box"
+                       class="flex-grow px-4 py-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button type="submit" id="send-button"
+                        class="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded focus:outline-none focus:shadow-outline">
+                    Send
+                </button>
+            </form>
+        </div>
     </div>
 
-    <div class="max-w-7xl w-full mx-auto mt-4 bg-white p-4 rounded-lg shadow-lg font-sans text-gray-800">
-        <form action="." method="post" id="message-form" class="flex items-center">
-            {% csrf_token %}
-            <input type="text" name="message" id="message-box" class="flex-grow px-4 py-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-            <button type="submit" id="send-button" class="ml-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded focus:outline-none focus:shadow-outline">
-                Send
-            </button>
-        </form>
+    <!-- Online Users Section -->
+    <div class="bg-gray-100 p-4 rounded-lg shadow-lg h-full max-w-[100px] w-full">
+        <h2 class="text-base font-bold mb-2 text-center">Online</h2>
+        <ul id="onlineUsers" class="space-y-2 text-sm">
+        </ul>
     </div>
-
 </div>
+
 
 
 <script>
@@ -50,22 +63,38 @@
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        const messages = document.getElementById('messageContainer');
 
-        var direction = "flex-row"
-        if(data.created_by === user){
-            direction = "flex-row-reverse"
-        }
-        messages.innerHTML += `
-            <div class="flex ${direction} py-2">
-                <div class="p-2 bg-gray-100 rounded-lg">
-                    <p class="text-lg">${data.message}</p>
-                    <p class="text-sm text-gray-600">${ data.created_by } | ${ data.created_at }</p>
+        if (data.type === "chat_message"){
+            const messages = document.getElementById('messageContainer');
+
+            var direction = "flex-row"
+            if(data.created_by === user){
+                direction = "flex-row-reverse"
+            }
+            messages.innerHTML += `
+                <div class="flex ${direction} py-2">
+                    <div class="p-2 bg-gray-100 rounded-lg">
+                        <p class="text-lg">${data.message}</p>
+                        <p class="text-sm text-gray-600">${ data.created_by } | ${ data.created_at }</p>
+                    </div>
                 </div>
-            </div>
-        `
+            `
 
-        messages.scrollTop = messages.scrollHeight;
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        else if (data.type === "update_users") {
+            const onlineUsersList = document.getElementById('onlineUsers');
+            onlineUsersList.innerHTML = '';
+            data.online_users.forEach((username) => {
+              onlineUsersList.innerHTML += `
+                  <li class="flex items-center">
+                      <span class="text-green-500 mr-2">●</span>
+                      <span>${username}</span>
+                  </li>
+              `;
+          });
+        }
     };
 
     document.getElementById('send-button').onclick = function(e) {
