@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import ChatRoom
@@ -33,11 +34,16 @@ def user_login(request):
 
     return render(request, 'auth/login.html')
 
+def user_logout(request):
+    logout(request)
+    return redirect('user_login')
 
+@login_required
 def home_view(request):
     rooms = ChatRoom.objects.all()
     return render(request, 'pages/home.html', {'rooms': rooms})
 
+@login_required
 def chat_room(request, room_name):
     room = get_object_or_404(ChatRoom, name=room_name)
     messages = room.conversation.all()

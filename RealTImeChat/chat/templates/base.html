@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}MVP{% endblock %}</title>
+    <title>{% block title %}Chat App{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
     <header class="bg-indigo-600 text-white py-4">
-        <h1 class="text-center text-2xl font-bold">MVP</h1>
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold ml-5"> <a href="{% url 'home' %}">Chat App</a></h1>
+            <a href="{% url 'logout' %}" class="inline-block bg-red-500 text-white font-semibold py-2 px-6 mr-5 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">
+                Logout
+            </a>
+        </div>
     </header>
     {% block content %}{% endblock %}
 </body>

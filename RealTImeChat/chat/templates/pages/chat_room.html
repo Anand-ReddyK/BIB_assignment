@@ -63,7 +63,7 @@
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-
+        console.log(data, "hiiiiiiiiiii");
         if (data.type === "chat_message"){
             const messages = document.getElementById('messageContainer');
 
